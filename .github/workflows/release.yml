@@ -43,14 +43,35 @@ jobs:
           KEY_ALIAS: ${{ secrets.KEYSTORE_KEY_ALIAS }}
         run: |
           set -e
+          for s in KEYSTORE_BASE64 STORE_PASS KEY_PASS; do
+            if [ -z "${!s:-}" ]; then
+              echo "::error::Repository secret $s belum diisi. Lihat docs/11-push-github.md langkah 1."
+              exit 1
+            fi
+          done
           mkdir -p keystore
-          echo "$KEYSTORE_BASE64" | base64 -d > keystore/otoradio-release.jks
+          printf '%s' "$KEYSTORE_BASE64" | base64 -d > keystore/otoradio-release.jks
           cat > keystore.properties <<EOF
           storeFile=keystore/otoradio-release.jks
           storePassword=$STORE_PASS
           keyAlias=${KEY_ALIAS:-otoradio}
           keyPassword=$KEY_PASS
           EOF
+          keytool -list -keystore keystore/otoradio-release.jks -storepass "$STORE_PASS" \
+            | grep -E "Your keystore|otoradio" || true
+
+      # Cegah rilis dengan nomor versi yang tidak cocok dengan tag
+      - name: Cocokkan tag dengan versionName
+        if: startsWith(github.ref, 'refs/tags/v')
+        run: |
+          set -e
+          V=$(grep -oP 'versionName\s*=\s*"\K[^"]+' app/build.gradle.kts | head -1)
+          T="${GITHUB_REF_NAME#v}"
+          if [ "$V" != "$T" ]; then
+            echo "::error::tag v$T tidak sama dengan versionName $V. Naikkan versi di app/build.gradle.kts dulu."
+            exit 1
+          fi
+          echo "versi cocok: $V"
 
       - name: Build rilis
         run: |
