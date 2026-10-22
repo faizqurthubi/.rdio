@@ -27,13 +27,31 @@ class LogoStore @Inject constructor(@ApplicationContext private val context: Con
         cache.get(assetPath)?.let { return it }
         return withContext(Dispatchers.IO) {
             runCatching {
+                // Batasi ukuran decode: logo 44-96 dp tidak butuh bitmap 1000 px,
+                // dan penskalaan turun besar-besaran membuat tepi terlihat kusam.
+                val bounds = BitmapFactory.Options().apply { inJustDecodeBounds = true }
+                context.assets.open(assetPath).use { BitmapFactory.decodeStream(it, null, bounds) }
+                val opts = BitmapFactory.Options().apply {
+                    inSampleSize = sampleSizeFor(bounds.outWidth, bounds.outHeight, 512)
+                    inPreferredConfig = Bitmap.Config.ARGB_8888
+                }
                 context.assets.open(assetPath).use { input ->
-                    val opts = BitmapFactory.Options().apply { inSampleSize = 1 }
                     val bmp: Bitmap = BitmapFactory.decodeStream(input, null, opts) ?: return@use null
                     bmp.asImageBitmap().also { cache.put(assetPath, it) }
                 }
             }.getOrNull()
         }
+    }
+
+    /** Pangkat dua terbesar yang masih menyisakan sisi >= [target] px. */
+    private fun sampleSizeFor(width: Int, height: Int, target: Int): Int {
+        var sample = 1
+        var w = width
+        var h = height
+        while (w / 2 >= target && h / 2 >= target) {
+            w /= 2; h /= 2; sample *= 2
+        }
+        return sample
     }
 
     /** Dipakai service untuk artwork notifikasi (butuh android.graphics.Bitmap). */

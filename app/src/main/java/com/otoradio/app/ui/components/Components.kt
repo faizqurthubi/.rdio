@@ -87,7 +87,10 @@ fun StationArtwork(
     modifier: Modifier = Modifier,
     logoStore: LogoStore? = null,
     /** Latar solid agar logo berlatar transparan tetap terbaca (dipakai mini player). */
-    solidBackground: Color? = null
+    solidBackground: Color? = null,
+    /** Piring di belakang logo. Logo katalog banyak yang garis hitam transparan:
+     *  di atas permukaan gelap ia "menghilang", jadi diberi piring terang. */
+    plateColor: Color? = null
 ) {
     val logo = rememberStationLogo(logoStore, station.logoAsset)
     Box(
@@ -100,13 +103,24 @@ fun StationArtwork(
             ),
         contentAlignment = Alignment.Center
     ) {
+        if (plateColor != null) {
+            Box(
+                Modifier
+                    .fillMaxSize()
+                    .padding(size.dp * 0.07f)
+                    .clip(RoundedCornerShape((corner * 0.6f).dp))
+                    .background(plateColor)
+            )
+        }
         val bmp = logo
         if (bmp != null) {
             Image(
                 bitmap = bmp,
                 contentDescription = station.name,
                 contentScale = ContentScale.Crop,
-                modifier = Modifier.fillMaxSize()
+                modifier = Modifier
+                    .fillMaxSize()
+                    .padding(if (plateColor != null) size.dp * 0.14f else 0.dp)
             )
         } else {
             Text(
@@ -259,23 +273,14 @@ fun MiniPlayer(
             ) {
                 if (station != null) {
                     // Latar solid + cincin tipis: logo tidak lagi pudar ditelan warna dinamis.
-                    Box(
-                        Modifier
-                            .clip(RoundedCornerShape(15.dp))
-                            .border(
-                                1.dp,
-                                MaterialTheme.colorScheme.outline.copy(alpha = 0.35f),
-                                RoundedCornerShape(15.dp)
-                            )
-                    ) {
-                        StationArtwork(
-                            station = station,
-                            size = 48,
-                            corner = 15,
-                            logoStore = logoStore,
-                            solidBackground = MaterialTheme.colorScheme.surfaceContainerLowest
-                        )
-                    }
+                    StationArtwork(
+                        station = station,
+                        size = 48,
+                        corner = 15,
+                        logoStore = logoStore,
+                        solidBackground = MaterialTheme.colorScheme.surfaceContainerLowest,
+                        plateColor = Color.White
+                    )
                 } else {
                     Box(
                         Modifier

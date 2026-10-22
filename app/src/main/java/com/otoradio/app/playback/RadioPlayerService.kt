@@ -93,7 +93,26 @@ class RadioPlayerService : MediaSessionService() {
             )
             .build()
 
-        val exo = ExoPlayer.Builder(this)
+        // Sadap PCM di pipeline audio untuk spektrum sungguhan (tanpa izin RECORD_AUDIO).
+        val renderersFactory = object : androidx.media3.exoplayer.DefaultRenderersFactory(this) {
+            override fun buildAudioSink(
+                context: android.content.Context,
+                enableFloatOutput: Boolean,
+                enableAudioTrackPlaybackParams: Boolean
+            ): androidx.media3.exoplayer.audio.AudioSink {
+                return androidx.media3.exoplayer.audio.DefaultAudioSink.Builder(context)
+                    .setAudioProcessorChain(
+                        androidx.media3.exoplayer.audio.DefaultAudioSink.DefaultAudioProcessorChain(
+                            arrayOf(com.otoradio.app.audio.SpectrumAudioProcessor())
+                        )
+                    )
+                    .setEnableFloatOutput(enableFloatOutput)
+                    .setEnableAudioTrackPlaybackParams(enableAudioTrackPlaybackParams)
+                    .build()
+            }
+        }
+
+        val exo = ExoPlayer.Builder(this, renderersFactory)
             .setMediaSourceFactory(DefaultMediaSourceFactory(dataSourceFactory))
             .setLoadControl(loadControl)
             .setAudioAttributes(

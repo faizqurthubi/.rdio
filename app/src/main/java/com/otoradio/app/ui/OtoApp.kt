@@ -92,19 +92,42 @@ fun OtoApp(vm: MainViewModel) {
     var showQueue by rememberSaveable { mutableStateOf(false) }
     var detail by remember { mutableStateOf<DetailRoute?>(null) }
     var addSheetStation by remember { mutableStateOf<Station?>(null) }
+    var confirmExit by remember { mutableStateOf(false) }
 
     // Tombol back Android: tutup lapisan teratas dulu, jangan langsung keluar aplikasi.
-    val canGoBack = addSheetStation != null || showQueue || showEq || showNowPlaying ||
-        detail != null || tab != Tab.Home.route
-    BackHandler(enabled = canGoBack) {
+    // BackHandler selalu aktif: lapisan teratas ditutup dulu; bila sudah di akar
+    // aplikasi, munculkan konfirmasi agar tidak keluar karena salah tekan.
+    BackHandler(enabled = true) {
         when {
+            confirmExit -> confirmExit = false
             addSheetStation != null -> addSheetStation = null
             showQueue -> showQueue = false
             showEq -> showEq = false
             showNowPlaying -> showNowPlaying = false
             detail != null -> detail = null
-            else -> tab = Tab.Home.route
+            tab != Tab.Home.route -> tab = Tab.Home.route
+            else -> confirmExit = true
         }
+    }
+
+    if (confirmExit) {
+        androidx.compose.material3.AlertDialog(
+            onDismissRequest = { confirmExit = false },
+            title = { Text("Keluar dari Oto Radio?") },
+            text = { Text("Siaran akan berhenti.") },
+            confirmButton = {
+                androidx.compose.material3.TextButton(onClick = {
+                    confirmExit = false
+                    // Keluar dari aplikasi: hentikan layanan pemutar lalu selesaikan activity.
+                    (context as? androidx.activity.ComponentActivity)?.finish()
+                }) { Text("Keluar") }
+            },
+            dismissButton = {
+                androidx.compose.material3.TextButton(onClick = { confirmExit = false }) {
+                    Text("Batal")
+                }
+            }
+        )
     }
 
     val context = LocalContext.current

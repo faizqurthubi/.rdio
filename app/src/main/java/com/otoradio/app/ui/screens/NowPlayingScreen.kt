@@ -66,6 +66,7 @@ import androidx.compose.ui.text.style.TextOverflow
 import androidx.compose.ui.unit.dp
 import com.otoradio.app.ui.components.AudioSpectrum
 import com.otoradio.app.ui.components.LiveDot
+import com.otoradio.app.ui.components.LiveStatus
 import androidx.compose.ui.unit.sp
 import com.otoradio.app.data.model.Station
 import com.otoradio.app.playback.PlayerUiState
@@ -243,7 +244,7 @@ fun NowPlayingScreen(
                 active = state.isPlaying && !state.isBuffering,
                 barColor = MaterialTheme.colorScheme.primary,
                 modifier = Modifier.fillMaxWidth(),
-                fullHeight = 26.dp
+                fullHeight = 30.dp
             )
             Row(
                 Modifier
@@ -252,13 +253,7 @@ fun NowPlayingScreen(
                 horizontalArrangement = Arrangement.Start,
                 verticalAlignment = Alignment.CenterVertically
             ) {
-                LiveDot(active = state.isPlaying && !state.isBuffering)
-                Spacer(Modifier.width(6.dp))
-                Text(
-                    if (state.isBuffering) "MENYAMBUNG" else "LIVE",
-                    style = MaterialTheme.typography.labelSmall,
-                    color = MaterialTheme.colorScheme.primary
-                )
+                LiveStatus(isPlaying = state.isPlaying, isBuffering = state.isBuffering)
                 Spacer(Modifier.weight(1f))
                 Text(
                     state.error ?: "",

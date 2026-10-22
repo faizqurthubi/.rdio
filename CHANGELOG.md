@@ -2,6 +2,26 @@
 
 Format ringkas. Detail teknis per revisi ada di `docs/`.
 
+## 1.4 — versionCode 5 (belum dirilis)
+
+Sedang diuji lewat workflow **Build** (APK debug di tab Actions → Artifacts).
+
+- **Spektrum mengikuti suara sungguhan.** ExoPlayer diberi `SpectrumAudioProcessor`
+  (`BaseAudioProcessor` + FFT 1024) yang menyadap PCM tepat sebelum masuk speaker, menghitung
+  28 pita frekuensi 60 Hz–14 kHz, lalu dikirim ke UI. Tidak butuh izin RECORD_AUDIO seperti
+  `audiofx.Visualizer`.
+- **Spektrum memenuhi lebar layar**, batang sama rata, tinggi dari data audio (attack cepat,
+  decay lambat).
+- **Status tiga keadaan**: `MENYAMBUNG` (spinner berputar) · `LIVE` (titik merah berpendar) ·
+  `OFFLINE` (titik abu-abu).
+- **Ikon**: isi hitam diperkecil — safe zone 66/108 → 54/108 dp, jadi tidak keluar dari latar kuning.
+- **Antrean sadar daftar sejak awal**: memutar stasiun tanpa konteks memakai seluruh katalog
+  sebagai antrean, sehingga tombol prev/next di mini player langsung tampil.
+- **Artwork**: logo katalog umumnya garis hitam berlatar transparan; di atas permukaan gelap ia
+  menghilang. Sekarang digambar di atas **piring putih** (dengan padding), tanpa cincin redup.
+  Decode logo juga dibatasi 512 px agar tidak diskalakan turun dari ribuan piksel.
+- **Tombol back** di akar aplikasi memunculkan dialog konfirmasi "Keluar dari Oto Radio?".
+
 ## 1.3 — versionCode 4 (2026-10-22)
 
 - **Now Playing:** garis progres yang merayap dihapus (siaran langsung tidak punya durasi).

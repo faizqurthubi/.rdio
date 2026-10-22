@@ -1,0 +1,62 @@
+name: Build (uji kompilasi)
+
+# Membangun APK debug + unit test pada setiap push ke main, tanpa menerbitkan rilis.
+# APK hasil build bisa diunduh dari tab Actions -> run -> Artifacts.
+on:
+  push:
+    branches: [main]
+  pull_request:
+  workflow_dispatch:
+
+permissions:
+  contents: read
+
+jobs:
+  build:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+
+      - uses: actions/setup-java@v4
+        with:
+          distribution: temurin
+          java-version: '17'
+
+      # Runner ubuntu-latest sudah membawa Android SDK (ANDROID_HOME sudah terisi).
+      - name: Info SDK
+        run: |
+          echo "ANDROID_HOME=$ANDROID_HOME"
+          ls "$ANDROID_HOME/platforms" | tail -3
+
+      - name: Aset katalog
+        run: |
+          set -e
+          test -f app/src/main/assets/stations.json
+          echo "logo: $(ls app/src/main/assets/logos | wc -l)"
+
+      - name: Build + unit test
+        run: |
+          chmod +x gradlew
+          ./gradlew :app:assembleDebug :app:testDebugUnitTest --no-daemon --console=plain
+
+      - name: Ringkas hasil test
+        if: always()
+        run: |
+          python3 - <<'EOF'
+          import glob, re, os
+          tot = fail = 0
+          for f in glob.glob('app/build/test-results/testDebugUnitTest/*.xml'):
+              s = open(f).read()
+              m = re.search(r'tests="(\d+)".*?failures="(\d+)"', s)
+              if m:
+                  tot += int(m.group(1)); fail += int(m.group(2))
+          print(f"test: {tot} lulus, {fail} gagal")
+          if fail: raise SystemExit(1)
+          EOF
+
+      - name: Unggah APK debug
+        uses: actions/upload-artifact@v4
+        with:
+          name: OtoRadio-debug-${{ github.sha }}
+          path: app/build/outputs/apk/debug/app-debug.apk
+          retention-days: 30

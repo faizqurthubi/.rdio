@@ -113,7 +113,11 @@ class MainViewModel @Inject constructor(
      * next/prev melanjutkan di daftar itu, bukan di seluruh katalog.
      */
     fun play(station: Station, context: List<Station>? = null, label: String? = null) {
-        val list = context?.takeIf { it.isNotEmpty() } ?: listOf(station)
+        // Tanpa konteks eksplisit, antrean = seluruh katalog. Dengan begitu mini player
+        // tahu sejak awal bahwa ada stasiun lain dan langsung menampilkan tombol next/prev.
+        val list = context?.takeIf { it.isNotEmpty() }
+            ?: repository.allStations().takeIf { it.isNotEmpty() }
+            ?: listOf(station)
         _queue.value = list
         _queueLabel.value = label
         queueIndex = list.indexOfFirst { it.id == station.id }.coerceAtLeast(0)
