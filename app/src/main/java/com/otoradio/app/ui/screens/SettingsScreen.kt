@@ -12,7 +12,11 @@ import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.rememberScrollState
 import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.foundation.verticalScroll
+import androidx.compose.material3.Button
+import androidx.compose.material3.CircularProgressIndicator
 import androidx.compose.material3.FilterChip
+import androidx.compose.material3.LinearProgressIndicator
+import androidx.compose.material3.TextButton
 import androidx.compose.material3.HorizontalDivider
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.Slider
@@ -26,10 +30,12 @@ import androidx.compose.runtime.remember
 import androidx.compose.runtime.setValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
+import androidx.compose.ui.text.style.TextOverflow
 import androidx.compose.ui.unit.dp
 import com.otoradio.app.data.local.AppSettings
 import com.otoradio.app.data.local.EqScope
 import com.otoradio.app.data.local.ThemeMode
+import com.otoradio.app.ui.UpdateUiState
 
 @Composable
 fun SettingsScreen(
@@ -43,6 +49,10 @@ fun SettingsScreen(
     onEqScope: (EqScope) -> Unit,
     onOpenEq: () -> Unit,
     stationCount: Int,
+    appVersion: String,
+    updateState: UpdateUiState,
+    onCheckUpdate: () -> Unit,
+    onInstallUpdate: () -> Unit,
     modifier: Modifier = Modifier
 ) {
     Column(
@@ -137,13 +147,83 @@ fun SettingsScreen(
             }
         }
 
+        GroupTitle("PEMBARUAN")
+        UpdateBlock(
+            appVersion = appVersion,
+            state = updateState,
+            onCheck = onCheckUpdate,
+            onInstall = onInstallUpdate
+        )
+
         GroupTitle("TENTANG")
         SettingRow(
-            title = "Oto Radio 1.0",
+            title = "Oto Radio $appVersion",
             subtitle = "$stationCount stasiun",
             onClick = null
         )
         Spacer(Modifier.height(120.dp))
+    }
+}
+
+@Composable
+private fun UpdateBlock(
+    appVersion: String,
+    state: UpdateUiState,
+    onCheck: () -> Unit,
+    onInstall: () -> Unit
+) {
+    Column(Modifier.padding(horizontal = 20.dp, vertical = 6.dp)) {
+        Row(verticalAlignment = Alignment.CenterVertically) {
+            Column(Modifier.weight(1f)) {
+                Text("Versi $appVersion", style = MaterialTheme.typography.titleMedium)
+                Text(
+                    when (state) {
+                        is UpdateUiState.Idle -> "Belum diperiksa"
+                        is UpdateUiState.Checking -> "Memeriksa…"
+                        is UpdateUiState.UpToDate -> "Terbaru"
+                        is UpdateUiState.Available -> "Versi ${state.info.version} tersedia"
+                        is UpdateUiState.Downloading -> "Mengunduh ${(state.progress * 100).toInt()}%"
+                        is UpdateUiState.ReadyToInstall -> "Menunggu konfirmasi instalasi"
+                        is UpdateUiState.NeedPermission -> state.reason
+                        is UpdateUiState.Error -> state.message
+                    },
+                    style = MaterialTheme.typography.bodySmall,
+                    color = if (state is UpdateUiState.Error || state is UpdateUiState.NeedPermission)
+                        MaterialTheme.colorScheme.error
+                    else MaterialTheme.colorScheme.onSurfaceVariant,
+                    maxLines = 2,
+                    overflow = TextOverflow.Ellipsis
+                )
+            }
+            when (state) {
+                is UpdateUiState.Checking -> CircularProgressIndicator(
+                    modifier = Modifier.padding(end = 8.dp),
+                    strokeWidth = 2.dp
+                )
+                is UpdateUiState.Available -> Button(onClick = onInstall) { Text("Perbarui") }
+                is UpdateUiState.NeedPermission -> Button(onClick = onInstall) { Text("Izinkan") }
+                else -> TextButton(onClick = onCheck) { Text("Periksa") }
+            }
+        }
+
+        if (state is UpdateUiState.Downloading) {
+            LinearProgressIndicator(
+                progress = { state.progress },
+                modifier = Modifier.fillMaxWidth().padding(top = 8.dp)
+            )
+        }
+        if (state is UpdateUiState.Available && state.info.notes.isNotBlank()) {
+            Text(
+                state.info.notes.lineSequence().take(3).joinToString("\n"),
+                style = MaterialTheme.typography.bodySmall,
+                color = MaterialTheme.colorScheme.onSurfaceVariant,
+                maxLines = 3,
+                overflow = TextOverflow.Ellipsis,
+                modifier = Modifier.padding(top = 6.dp)
+            )
+        }
+        Spacer(Modifier.height(6.dp))
+        HorizontalDivider(color = MaterialTheme.colorScheme.outline.copy(alpha = 0.2f))
     }
 }
 

@@ -73,6 +73,18 @@ jobs:
           fi
           echo "versi cocok: $V"
 
+      - name: Bersihkan draft tanpa tag
+        env:
+          GH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+        run: |
+          gh release list --repo "$GITHUB_REPOSITORY" --limit 50 \
+            --json tagName,isDraft \
+            --jq '.[] | select(.isDraft and (.tagName | startswith("untagged-"))) | .tagName' \
+          | while read -r t; do
+              echo "hapus draft yatim: $t"
+              gh release delete "$t" --repo "$GITHUB_REPOSITORY" --yes || true
+            done
+
       - name: Build rilis
         run: |
           chmod +x gradlew
@@ -95,6 +107,7 @@ jobs:
       - name: Terbitkan Release
         uses: softprops/action-gh-release@v2
         with:
+          tag_name: ${{ github.ref_name }}
           name: OtoRadio ${{ github.ref_name }}
           draft: true          # draft dulu: asset lengkap, baru publish -> aman untuk immutable releases
           generate_release_notes: false
@@ -102,3 +115,12 @@ jobs:
           files: |
             ${{ steps.apk.outputs.name }}
             SHA256SUMS
+
+      # Draft -> lengkapi -> publish: urutan yang aman untuk immutable releases.
+      - name: Publikasikan rilis
+        env:
+          GH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+        run: |
+          gh release edit "${{ github.ref_name }}" --repo "$GITHUB_REPOSITORY" \
+            --draft=false --latest
+          gh release view "${{ github.ref_name }}" --repo "$GITHUB_REPOSITORY" --json tagName,isDraft

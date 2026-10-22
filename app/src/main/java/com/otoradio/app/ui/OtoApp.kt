@@ -17,6 +17,8 @@ import androidx.compose.material.icons.outlined.Search
 import androidx.compose.material.icons.outlined.Settings
 import androidx.compose.material.icons.rounded.LibraryMusic
 import androidx.compose.material.icons.rounded.Radio
+import androidx.compose.material3.Badge
+import androidx.compose.material3.BadgedBox
 import androidx.compose.material3.Icon
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.NavigationBar
@@ -38,6 +40,7 @@ import androidx.compose.runtime.setValue
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.graphics.vector.ImageVector
 import androidx.compose.ui.platform.LocalContext
+import androidx.hilt.navigation.compose.hiltViewModel
 import androidx.compose.ui.unit.dp
 import com.otoradio.app.data.RadioRepository.PlaylistSummary
 import com.otoradio.app.data.local.EqScope
@@ -67,6 +70,9 @@ private data class DetailRoute(val kind: String, val playlistId: String?, val ti
 
 @Composable
 fun OtoApp(vm: MainViewModel) {
+    val updateVm: UpdateViewModel = hiltViewModel()
+    val updateState by updateVm.state.collectAsState()
+    LaunchedEffect(Unit) { updateVm.checkIfStale() }
     val library by vm.library.collectAsState()
     val playerState by vm.playerState.collectAsState()
     val settings by vm.settings.collectAsState()
@@ -132,7 +138,15 @@ fun OtoApp(vm: MainViewModel) {
                                     tab = t.route
                                     detail = null
                                 },
-                                icon = { Icon(t.icon, contentDescription = t.label) },
+                                icon = {
+                                    if (t is Tab.Settings && updateState is UpdateUiState.Available) {
+                                        BadgedBox(badge = { Badge() }) {
+                                            Icon(t.icon, contentDescription = t.label)
+                                        }
+                                    } else {
+                                        Icon(t.icon, contentDescription = t.label)
+                                    }
+                                },
                                 label = { Text(t.label) },
                                 colors = NavigationBarItemDefaults.colors(
                                     selectedIconColor = MaterialTheme.colorScheme.onPrimaryContainer,
@@ -229,7 +243,11 @@ fun OtoApp(vm: MainViewModel) {
                         onSleepDefault = vm::setSleepDefault,
                         onEqScope = vm::setEqScope,
                         onOpenEq = { showEq = true },
-                        stationCount = library.stations.size
+                        stationCount = library.stations.size,
+                        appVersion = updateVm.currentVersion,
+                        updateState = updateState,
+                        onCheckUpdate = updateVm::check,
+                        onInstallUpdate = updateVm::downloadAndInstall
                     )
                 }
             }

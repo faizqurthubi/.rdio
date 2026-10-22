@@ -21,16 +21,25 @@ android {
         applicationId = "com.otoradio.app"
         minSdk = 26
         targetSdk = 35
-        versionCode = 2
-        versionName = "1.1"
+        versionCode = 3
+        versionName = "1.2"
         vectorDrawables { useSupportLibrary = true }
+        // Repo sumber pembaruan (GitHub Releases, publik, tanpa token)
+        buildConfigField("String", "UPDATE_REPO", "\"faizqurthubi/.rdio\"")
     }
 
     buildTypes {
         debug {
             isMinifyEnabled = false
+            // Untuk menguji alur pembaruan tanpa menerbitkan rilis sungguhan:
+            //   ./gradlew assembleDebug -PupdateApiUrl=http://10.0.2.2:8000/release.json
+            buildConfigField(
+                "String", "UPDATE_API_URL",
+                "\"${(project.findProperty("updateApiUrl") as String?) ?: ""}\""
+            )
         }
         release {
+            buildConfigField("String", "UPDATE_API_URL", "\"\"")
             isMinifyEnabled = true
             isShrinkResources = true
             proguardFiles(getDefaultProguardFile("proguard-android-optimize.txt"), "proguard-rules.pro")
@@ -54,6 +63,7 @@ android {
     }
     buildFeatures {
         compose = true
+        buildConfig = true
     }
     packaging {
         resources {

@@ -3,7 +3,10 @@
 Pemutar radio internet pribadi untuk Android. Sideload, tanpa Play Store. Katalog 741 stasiun
 + 683 logo dibundel di dalam APK, jadi daftar stasiun tetap bisa dibuka tanpa jaringan.
 
-**Versi terbaru: 1.1** (versionCode 2) — unduh dari tab **[Releases](../../releases/latest)**.
+**Versi terbaru: 1.2** (versionCode 3) — unduh dari tab **[Releases](../../releases/latest)**.
+
+Mulai 1.2 aplikasi bisa memperbarui dirinya sendiri: **Pengaturan → PEMBARUAN → Periksa**.
+Unduhan diverifikasi SHA-256 (dari API GitHub) + sertifikat penanda tangan sebelum dipasang.
 
 ## Pasang
 
@@ -17,10 +20,14 @@ Verifikasi unduhan:
 sha256sum -c SHA256SUMS
 ```
 
-## Update otomatis (opsional)
+## Update
 
-Pasang [Obtainium](https://github.com/ImranR98/Obtainium) → **Add App** → tempel URL repo ini.
-Obtainium akan memeriksa Releases dan menawarkan pembaruan.
+- **Bawaan aplikasi** — Pengaturan → PEMBARUAN. Cek otomatis 6 jam sekali, badge merah di tab
+  *Atur* bila ada versi baru. Tidak butuh aplikasi lain.
+- **Obtainium (opsional)** — pasang [Obtainium](https://github.com/ImranR98/Obtainium) →
+  **Add App** → tempel URL repo ini. Berguna sebagai cadangan.
+
+Versi 1.1 dan sebelumnya belum punya updater bawaan, jadi pembaruan ke 1.2 masih manual sekali.
 
 ## Build sendiri
 

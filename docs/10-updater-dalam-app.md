@@ -113,3 +113,58 @@ Izin yang diminta ke pengguna: satu kali "Izinkan pemasangan aplikasi dari sumbe
 Rekomendasi: **pakai keduanya** — GitHub Releases sebagai kanal resmi (immutable, ada
 attestation, bisa dibuka dari browser), updater bawaan sebagai jalur utama sehari-hari, dan
 Obtainium sebagai cadangan kalau updater bawaan bermasalah.
+
+---
+
+# Implementasi (v1.2, versionCode 3) — sudah terpasang & teruji
+
+## Berkas baru
+
+| Berkas | Isi |
+|---|---|
+| `data/update/UpdateInfo.kt` | model + `ReleaseParser` (murni, bisa diuji tanpa Android): parsing JSON, pemilihan asset `*-release.apk`, perbandingan versi numerik, **tolak URL non-HTTPS** |
+| `data/update/UpdateRepository.kt` | panggil `releases/latest`, unduh dengan progres, hitung SHA-256 streaming, verifikasi paket + sertifikat |
+| `data/update/ApkInstaller.kt` | cek izin `REQUEST_INSTALL_PACKAGES`, buka layar izin, dan serahkan APK ke dialog sistem lewat FileProvider |
+| `ui/UpdateViewModel.kt` | state: Idle → Checking → Available → Downloading(%) → ReadyToInstall → UpToDate / Error / NeedPermission |
+| `res/xml/file_paths.xml` | jalur `cache-path` untuk FileProvider (authority `${applicationId}.updates`) |
+| `app/src/test/.../UpdateParserTest.kt` | 8 unit test |
+
+## Perubahan pada berkas lama
+
+- `AndroidManifest.xml`: izin `REQUEST_INSTALL_PACKAGES` + `<provider FileProvider>`.
+- `app/build.gradle.kts`: `buildConfig = true`, field `UPDATE_REPO="faizqurthubi/.rdio"`,
+  `UPDATE_API_URL` (kosong di rilis; bisa di-override hanya pada build debug).
+- `SettingsScreen`: bagian **PEMBARUAN** (versi, status, tombol Periksa/Perbarui, progres,
+  changelog 3 baris). Baris TENTANG kini membaca versi dari `PackageManager`, bukan hardcode.
+- `OtoApp`: `hiltViewModel<UpdateViewModel>()`, cek otomatis saat app dibuka (maks 6 jam sekali),
+  dan **badge** di tab *Atur* bila ada versi baru.
+
+## Hasil uji di emulator Android 8.0 (API 26)
+
+| Langkah | Hasil |
+|---|---|
+| Pasang v1.2 (versionCode 3), buka Pengaturan | "Versi 1.2 · Belum diperiksa" |
+| Tekan *Periksa* terhadap JSON rilis tiruan v1.3 | "Versi 1.3 tersedia" + changelog muncul |
+| Tekan *Perbarui* | progres "Mengunduh 19% … 75% …" berjalan |
+| Verifikasi | SHA-256 cocok, paket & sertifikat cocok, versionCode 4 > 3 |
+| Dialog sistem | "Do you want to install an update to this existing application? Your existing data will not be lost." |
+| Setelah INSTALL | `dumpsys package` → **versionCode=4, versionName=1.3** |
+| Buka lagi Pengaturan | "Versi 1.3 · Terbaru" |
+
+Bukti layar: `preview/emulator/v12-01-update-tersedia.png`, `v12-02-dialog-instal.png`,
+`v12-03-setelah-update.png`.
+
+## Bug yang tertangkap justru karena diuji di Android 8
+
+`GET_SIGNING_CERTIFICATES` baru ada di API 28. Di Android 8 flag itu membuat
+`PackageInfo.signatures` bernilai null, sehingga APK yang sah dilaporkan
+"APK tidak bertanda tangan" dan pembaruan selalu ditolak. Perbaikannya: pilih
+`GET_SIGNING_CERTIFICATES` (≥ 28) atau `GET_SIGNATURES` (< 28) — lihat `pmFlags`
+di `UpdateRepository.kt`. Tanpa uji di perangkat lama, bug ini akan lolos ke rilis.
+
+## Catatan keamanan pada build
+
+- `allowInsecureHttp` hanya `true` bila `BuildConfig.DEBUG`; build rilis **hanya** menerima
+  `https://`. Ini dipakai untuk menguji lewat server lokal (`10.0.2.2`) tanpa menerbitkan rilis.
+- Progres unduhan memakai `contentLength`; bila server tidak mengirimnya, dipakai `size` dari API.
+- APK pembaruan disimpan di `cacheDir/oto-update.apk` dan dihapus bila verifikasi gagal.
