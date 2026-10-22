@@ -2,7 +2,17 @@
 
 Format ringkas. Detail teknis per revisi ada di `docs/`.
 
-## 1.4 — versionCode 5 (belum dirilis)
+## 1.5 — versionCode 6 (belum dirilis)
+
+- **Perbaikan spektrum mentok penuh.** Di 1.4 semua batang tampil sama tinggi (blok padat) karena
+  magnitudo FFT tidak dinormalisasi: puncak sinus ≈ N/4 sehingga dB-nya ±+48 dan seluruh pita
+  ter-clamp ke 1.0. Sekarang magnitudo dinormalisasi (`mag * 4 / N`) lalu dipetakan pada
+  −58…0 dB, jadi tinggi batang benar-benar mengikuti isi audio.
+- Matematika spektrum dipindah ke `audio/SpectrumMath.kt` yang murni (tanpa Android) dan
+  **diuji unit test** (6 kasus: hening, tidak mentok, pita bervariasi, pemetaan frekuensi
+  150 Hz / 1 kHz / 9 kHz ke pita berbeda, amplitudo vs level, jumlah pita).
+
+## 1.4 — versionCode 5 (2026-10-22)
 
 Sedang diuji lewat workflow **Build** (APK debug di tab Actions → Artifacts).
 
