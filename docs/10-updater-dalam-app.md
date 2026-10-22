@@ -151,7 +151,7 @@ Obtainium sebagai cadangan kalau updater bawaan bermasalah.
 | Setelah INSTALL | `dumpsys package` → **versionCode=4, versionName=1.3** |
 | Buka lagi Pengaturan | "Versi 1.3 · Terbaru" |
 
-Bukti layar: `preview/emulator/v12-01-update-tersedia.png`, `v12-02-dialog-instal.png`,
+Bukti layar: `preview/emulator/v12-01-progres-unduh.png`, `v12-02-dialog-instal.png`,
 `v12-03-setelah-update.png`.
 
 ## Bug yang tertangkap justru karena diuji di Android 8
