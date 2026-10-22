@@ -113,3 +113,33 @@ yang dipublikasikan setelah setelan menyala. Kalau draft terlanjur dipublikasika
 melaporkan `"immutable": false`, itu tidak bisa diperbaiki untuk rilis yang sama — biarkan saja
 (rilis tetap sah, digest SHA-256 tetap terbit otomatis oleh GitHub), lalu pastikan rilis v1.2
 dibuat setelah setelan menyala.
+
+## Rilis 1.2 (22 Okt 2026) — CI membangun dan menerbitkan sendiri
+
+Tag `v1.2` → workflow jalan ±14 menit → **sukses**, dan sekarang rilisnya **publik**:
+
+```
+tag: v1.2   draft: false   immutable: true   prerelease: false
+  OtoRadio-1.2-release.apk   5.704.538 B
+    digest: sha256:d460880a63187650e40b570db976454a4b409987a3aa5fa4ae86d0d5da7f6a2e
+  SHA256SUMS                 91 B
+```
+
+Verifikasi independen dari luar CI (unduh ulang dari URL publik):
+
+- `sha256sum` = `d460880a…6a2e` — sama dengan digest yang dilaporkan API GitHub
+- `apksigner verify` → `CN=OtoRadio`, cert SHA-256 `425814de…f82bd8` (identik dengan rilis 1.1,
+  jadi pembaruan di tempat berjalan)
+- `aapt2 dump badging` → `versionCode='3' versionName='1.2'`
+
+Dua perbaikan workflow yang membuat ini berhasil tanpa interaksi manual:
+
+1. `tag_name: ${{ github.ref_name }}` pada `softprops/action-gh-release`. Tanpa itu, dengan
+   `draft: true`, action membuat draft bertag `untagged-xxxxxxxx` yang tidak bisa dipakai
+   `releases/latest` (inilah yang terjadi pada percobaan v1.1).
+2. Langkah **Publikasikan rilis** (`gh release edit --draft=false --latest`) setelah semua asset
+   terunggah — urutan draft → lengkapi → publish, sesuai anjuran immutable releases.
+   Ditambah langkah **Bersihkan draft tanpa tag** yang menghapus sisa draft `untagged-*`.
+
+Immutable releases aktif untuk repo ini (`GET /immutable-releases` → `{"enabled": true,
+"enforced_by_owner": false}`), sehingga APK pada v1.2 tidak bisa diganti atau dihapus.
