@@ -73,3 +73,43 @@ URL-nya jadi `github.com/faizqurthubi/.rdio`. Semua fungsi (Actions, Releases, r
 normal — sudah diverifikasi via API (`private: false`, `default_branch: main`). Kalau mau lebih
 enak dibaca dan dibagikan, ganti nama jadi `otoradio` di Settings → Repository name;
 GitHub otomatis mengalihkan URL lama. Ini opsional dan tidak memengaruhi apa pun.
+
+## Hasil: rilis pertama lewat CI (22 Okt 2026)
+
+Tag `v1.1` di-push → workflow **"Rilis APK"** jalan ±12 menit dan **sukses seluruhnya**:
+
+```
+Cek aset katalog ............... success
+Pulihkan keystore dari secret .. success
+Cocokkan tag dengan versionName  success
+Build rilis .................... success
+Verifikasi APK (apksigner) ..... success
+Terbitkan Release .............. success
+```
+
+Release dibuat sebagai **draft** (sesuai konfigurasi), sehingga belum terlihat publik sampai
+tombol *Publish release* ditekan. Draft hanya bisa dilihat pemilik repo — `GET /releases`
+tanpa autentikasi tidak akan menampilkannya.
+
+### Catatan soal "Enable release immutability"
+
+Setelan ini **tersedia untuk repo milik akun pribadi**, tetapi **tidak ada di aplikasi GitHub
+mobile**. Harus lewat browser:
+
+`github.com/faizqurthubi/.rdio` → **Settings** → **General** → gulir ke bagian **Releases** →
+**Enable release immutability**
+
+Kalau memakai browser HP, aktifkan dulu "Request desktop site" karena tampilan mobile
+menyembunyikan bagian itu. Alternatif lewat API (butuh PAT dengan akses Administration):
+
+```bash
+curl -X PUT -H "Authorization: Bearer <PAT>" \
+  https://api.github.com/repos/faizqurthubi/.rdio/immutable-releases
+# cek: GET endpoint yang sama -> {"enabled":true,"enforced_by_owner":false}
+```
+
+Urutan yang benar: **aktifkan dulu, baru publish draft**. Immutability hanya berlaku untuk rilis
+yang dipublikasikan setelah setelan menyala. Kalau draft terlanjur dipublikasikan dan API
+melaporkan `"immutable": false`, itu tidak bisa diperbaiki untuk rilis yang sama — biarkan saja
+(rilis tetap sah, digest SHA-256 tetap terbit otomatis oleh GitHub), lalu pastikan rilis v1.2
+dibuat setelah setelan menyala.
