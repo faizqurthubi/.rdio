@@ -103,7 +103,7 @@ class RadioPlayerService : MediaSessionService() {
                 return androidx.media3.exoplayer.audio.DefaultAudioSink.Builder(context)
                     .setAudioProcessorChain(
                         androidx.media3.exoplayer.audio.DefaultAudioSink.DefaultAudioProcessorChain(
-                            arrayOf(com.otoradio.app.audio.SpectrumAudioProcessor())
+                            com.otoradio.app.audio.SpectrumAudioProcessor()
                         )
                     )
                     .setEnableFloatOutput(enableFloatOutput)

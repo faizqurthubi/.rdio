@@ -110,6 +110,7 @@ fun OtoApp(vm: MainViewModel) {
         }
     }
 
+    val activityContext = LocalContext.current
     if (confirmExit) {
         androidx.compose.material3.AlertDialog(
             onDismissRequest = { confirmExit = false },
@@ -118,8 +119,8 @@ fun OtoApp(vm: MainViewModel) {
             confirmButton = {
                 androidx.compose.material3.TextButton(onClick = {
                     confirmExit = false
-                    // Keluar dari aplikasi: hentikan layanan pemutar lalu selesaikan activity.
-                    (context as? androidx.activity.ComponentActivity)?.finish()
+                    // Keluar dari aplikasi: selesaikan activity pemanggil.
+                    (activityContext as? androidx.activity.ComponentActivity)?.finish()
                 }) { Text("Keluar") }
             },
             dismissButton = {

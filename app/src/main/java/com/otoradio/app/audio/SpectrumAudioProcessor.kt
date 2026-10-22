@@ -79,10 +79,15 @@ class SpectrumAudioProcessor(
         return inputAudioFormat
     }
 
-    override fun queueInput(inputBuffer: ByteBuffer): Boolean {
-        // Salinan read-only: posisi buffer asli tidak disentuh, audio tetap utuh.
+    override fun queueInput(inputBuffer: ByteBuffer) {
+        // Analisis dulu lewat salinan read-only (posisi buffer asli tidak tersentuh).
         analyze(inputBuffer.asReadOnlyBuffer())
-        return super.queueInput(inputBuffer)
+        val size = inputBuffer.remaining()
+        if (size == 0) return
+        // Teruskan audio apa adanya: salin ke output buffer milik BaseAudioProcessor.
+        val out = replaceOutputBuffer(size)
+        out.put(inputBuffer)
+        out.flip()
     }
 
     override fun onReset() {
