@@ -76,7 +76,7 @@ jobs:
       - name: Build rilis
         run: |
           chmod +x gradlew
-          ./gradlew :app:assembleRelease :app:testReleaseUnitTest --no-daemon --console=plain
+          ./gradlew :app:assembleRelease :app:testDebugUnitTest --no-daemon --console=plain
 
       - name: Verifikasi APK
         id: apk
