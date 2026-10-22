@@ -5,6 +5,7 @@ import androidx.compose.animation.core.animateFloatAsState
 import androidx.compose.animation.core.spring
 import androidx.compose.foundation.Image
 import androidx.compose.foundation.background
+import androidx.compose.foundation.border
 import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.clickable
 import androidx.compose.foundation.layout.Arrangement
@@ -24,6 +25,8 @@ import androidx.compose.material.icons.filled.Favorite
 import androidx.compose.material.icons.outlined.FavoriteBorder
 import androidx.compose.material.icons.outlined.MoreVert
 import androidx.compose.material.icons.rounded.Pause
+import androidx.compose.material.icons.rounded.SkipNext
+import androidx.compose.material.icons.rounded.SkipPrevious
 import androidx.compose.material.icons.rounded.PlayArrow
 import androidx.compose.material3.Icon
 import androidx.compose.material3.IconButton
@@ -82,14 +85,19 @@ fun StationArtwork(
     size: Int,
     corner: Int = 16,
     modifier: Modifier = Modifier,
-    logoStore: LogoStore? = null
+    logoStore: LogoStore? = null,
+    /** Latar solid agar logo berlatar transparan tetap terbaca (dipakai mini player). */
+    solidBackground: Color? = null
 ) {
     val logo = rememberStationLogo(logoStore, station.logoAsset)
     Box(
         modifier = modifier
             .size(size.dp)
             .clip(RoundedCornerShape(corner.dp))
-            .background(stationGradient(station)),
+            .then(
+                if (solidBackground != null) Modifier.background(solidBackground)
+                else Modifier.background(stationGradient(station))
+            ),
         contentAlignment = Alignment.Center
     ) {
         val bmp = logo
@@ -227,6 +235,9 @@ fun MiniPlayer(
     onClick: () -> Unit,
     onToggle: () -> Unit,
     logoStore: LogoStore? = null,
+    /** Diisi hanya bila antrean punya lebih dari satu stasiun. */
+    onPrev: (() -> Unit)? = null,
+    onNext: (() -> Unit)? = null,
     modifier: Modifier = Modifier
 ) {
     Surface(
@@ -247,7 +258,24 @@ fun MiniPlayer(
                 verticalAlignment = Alignment.CenterVertically
             ) {
                 if (station != null) {
-                    StationArtwork(station = station, size = 44, corner = 14, logoStore = logoStore)
+                    // Latar solid + cincin tipis: logo tidak lagi pudar ditelan warna dinamis.
+                    Box(
+                        Modifier
+                            .clip(RoundedCornerShape(15.dp))
+                            .border(
+                                1.dp,
+                                MaterialTheme.colorScheme.outline.copy(alpha = 0.35f),
+                                RoundedCornerShape(15.dp)
+                            )
+                    ) {
+                        StationArtwork(
+                            station = station,
+                            size = 48,
+                            corner = 15,
+                            logoStore = logoStore,
+                            solidBackground = MaterialTheme.colorScheme.surfaceContainerLowest
+                        )
+                    }
                 } else {
                     Box(
                         Modifier
@@ -264,13 +292,33 @@ fun MiniPlayer(
                         color = MaterialTheme.colorScheme.onSurfaceVariant, maxLines = 1,
                         overflow = TextOverflow.Ellipsis)
                 }
-                IconButton(onClick = onToggle) {
+                if (onPrev != null) {
+                    IconButton(onClick = onPrev, modifier = Modifier.size(38.dp)) {
+                        Icon(
+                            Icons.Rounded.SkipPrevious,
+                            contentDescription = "Sebelumnya",
+                            modifier = Modifier.size(24.dp),
+                            tint = MaterialTheme.colorScheme.onSurfaceVariant
+                        )
+                    }
+                }
+                IconButton(onClick = onToggle, modifier = Modifier.size(42.dp)) {
                     Icon(
                         imageVector = if (isPlaying) Icons.Rounded.Pause else Icons.Rounded.PlayArrow,
                         contentDescription = if (isPlaying) "Jeda" else "Putar",
                         modifier = Modifier.size(30.dp),
                         tint = MaterialTheme.colorScheme.primary
                     )
+                }
+                if (onNext != null) {
+                    IconButton(onClick = onNext, modifier = Modifier.size(38.dp)) {
+                        Icon(
+                            Icons.Rounded.SkipNext,
+                            contentDescription = "Berikutnya",
+                            modifier = Modifier.size(24.dp),
+                            tint = MaterialTheme.colorScheme.onSurfaceVariant
+                        )
+                    }
                 }
             }
             AnimatedVisibility(visible = isBuffering) {

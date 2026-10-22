@@ -5,6 +5,7 @@ import androidx.compose.animation.core.tween
 import androidx.compose.foundation.background
 import androidx.compose.foundation.clickable
 import androidx.compose.foundation.gestures.detectVerticalDragGestures
+import androidx.activity.compose.BackHandler
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.BoxWithConstraints
@@ -19,6 +20,7 @@ import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.height
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.size
+import androidx.compose.foundation.layout.width
 import androidx.compose.foundation.shape.CircleShape
 import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.material.icons.Icons
@@ -62,6 +64,8 @@ import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.text.style.TextOverflow
 import androidx.compose.ui.unit.dp
+import com.otoradio.app.ui.components.AudioSpectrum
+import com.otoradio.app.ui.components.LiveDot
 import androidx.compose.ui.unit.sp
 import com.otoradio.app.data.model.Station
 import com.otoradio.app.playback.PlayerUiState
@@ -99,6 +103,11 @@ fun NowPlayingScreen(
     val density = androidx.compose.ui.platform.LocalDensity.current
     val dismissThreshold = with(density) { 220.dp.toPx() }
     val sleepSheet = rememberModalBottomSheetState(skipPartiallyExpanded = true)
+
+    // Tombol back: tutup sheet dulu, baru kembali ke tab. Tanpa ini back langsung keluar app.
+    BackHandler(enabled = true) {
+        if (showSleep) showSleep = false else onClose()
+    }
 
     val bg = station?.let { stationGradient(it) }
         ?: Brush.linearGradient(listOf(MaterialTheme.colorScheme.surfaceContainer, MaterialTheme.colorScheme.surface))
@@ -227,31 +236,30 @@ fun NowPlayingScreen(
                 overflow = TextOverflow.Ellipsis
             )
 
-            Spacer(Modifier.height(12.dp))
-            if (state.isBuffering) {
-                LinearProgressIndicator(
-                    Modifier
-                        .fillMaxWidth()
-                        .height(3.dp),
-                    color = MaterialTheme.colorScheme.primary,
-                    trackColor = Color.White.copy(alpha = 0.2f)
-                )
-            } else {
-                LinearProgressIndicator(
-                    Modifier
-                        .fillMaxWidth()
-                        .height(3.dp),
-                    color = MaterialTheme.colorScheme.primary,
-                    trackColor = Color.White.copy(alpha = 0.2f)
-                )
-            }
+            Spacer(Modifier.height(14.dp))
+            // Siaran langsung tidak punya durasi, jadi tidak ada garis progres.
+            // Yang tampil: spektrum dekoratif saat berbunyi, datar saat jeda.
+            AudioSpectrum(
+                active = state.isPlaying && !state.isBuffering,
+                barColor = MaterialTheme.colorScheme.primary,
+                modifier = Modifier.fillMaxWidth(),
+                fullHeight = 26.dp
+            )
             Row(
                 Modifier
                     .fillMaxWidth()
-                    .padding(top = 6.dp),
-                horizontalArrangement = Arrangement.SpaceBetween
+                    .padding(top = 8.dp),
+                horizontalArrangement = Arrangement.Start,
+                verticalAlignment = Alignment.CenterVertically
             ) {
-                Text("LIVE", style = MaterialTheme.typography.labelSmall, color = MaterialTheme.colorScheme.primary)
+                LiveDot(active = state.isPlaying && !state.isBuffering)
+                Spacer(Modifier.width(6.dp))
+                Text(
+                    if (state.isBuffering) "MENYAMBUNG" else "LIVE",
+                    style = MaterialTheme.typography.labelSmall,
+                    color = MaterialTheme.colorScheme.primary
+                )
+                Spacer(Modifier.weight(1f))
                 Text(
                     state.error ?: "",
                     style = MaterialTheme.typography.labelSmall,

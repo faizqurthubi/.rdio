@@ -3,7 +3,7 @@
 Pemutar radio internet pribadi untuk Android. Sideload, tanpa Play Store. Katalog 741 stasiun
 + 683 logo dibundel di dalam APK, jadi daftar stasiun tetap bisa dibuka tanpa jaringan.
 
-**Versi terbaru: 1.2** (versionCode 3) — unduh dari tab **[Releases](../../releases/latest)**.
+**Versi terbaru: 1.3** (versionCode 4) — unduh dari tab **[Releases](../../releases/latest)**.
 
 Mulai 1.2 aplikasi bisa memperbarui dirinya sendiri: **Pengaturan → PEMBARUAN → Periksa**.
 Unduhan diverifikasi SHA-256 (dari API GitHub) + sertifikat penanda tangan sebelum dipasang.

@@ -1,5 +1,6 @@
 package com.otoradio.app.ui
 
+import androidx.activity.compose.BackHandler
 import androidx.compose.animation.AnimatedVisibility
 import androidx.compose.animation.core.tween
 import androidx.compose.animation.fadeIn
@@ -92,6 +93,20 @@ fun OtoApp(vm: MainViewModel) {
     var detail by remember { mutableStateOf<DetailRoute?>(null) }
     var addSheetStation by remember { mutableStateOf<Station?>(null) }
 
+    // Tombol back Android: tutup lapisan teratas dulu, jangan langsung keluar aplikasi.
+    val canGoBack = addSheetStation != null || showQueue || showEq || showNowPlaying ||
+        detail != null || tab != Tab.Home.route
+    BackHandler(enabled = canGoBack) {
+        when {
+            addSheetStation != null -> addSheetStation = null
+            showQueue -> showQueue = false
+            showEq -> showEq = false
+            showNowPlaying -> showNowPlaying = false
+            detail != null -> detail = null
+            else -> tab = Tab.Home.route
+        }
+    }
+
     val context = LocalContext.current
     val currentStation: Station? = remember(playerState.stationId, library.stations) {
         library.stations.firstOrNull { it.id == playerState.stationId }
@@ -124,6 +139,8 @@ fun OtoApp(vm: MainViewModel) {
                             onClick = { showNowPlaying = true },
                             onToggle = { vm.togglePlayPause() },
                             logoStore = vm.logoStore,
+                            onPrev = if (queue.size > 1) vm::previous else null,
+                            onNext = if (queue.size > 1) vm::next else null,
                             modifier = Modifier.padding(bottom = 6.dp)
                         )
                     }

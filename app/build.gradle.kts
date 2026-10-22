@@ -21,8 +21,8 @@ android {
         applicationId = "com.otoradio.app"
         minSdk = 26
         targetSdk = 35
-        versionCode = 3
-        versionName = "1.2"
+        versionCode = 4
+        versionName = "1.3"
         vectorDrawables { useSupportLibrary = true }
         // Repo sumber pembaruan (GitHub Releases, publik, tanpa token)
         buildConfigField("String", "UPDATE_REPO", "\"faizqurthubi/.rdio\"")

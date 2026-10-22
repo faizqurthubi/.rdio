@@ -2,6 +2,20 @@
 
 Format ringkas. Detail teknis per revisi ada di `docs/`.
 
+## 1.3 — versionCode 4 (2026-10-22)
+
+- **Now Playing:** garis progres yang merayap dihapus (siaran langsung tidak punya durasi).
+  Diganti spektrum 27 batang yang beranimasi saat audio berbunyi, plus titik LIVE berpendar.
+- **Ikon baru:** boombox garis hitam di atas latar kuning `#FFD400`; adaptive icon + raster
+  48–192 px. Sumber asli disimpan di `design/`.
+- **Mini player:** tombol sebelumnya / putar-jeda / berikutnya muncul saat antrean berisi lebih
+  dari satu stasiun.
+- **Mini player:** artwork tidak lagi pudar — latar solid netral + cincin tipis, ukuran 48 dp.
+- **Tombol back Android diperbaiki:** back menutup lapisan teratas (sheet, Now Playing, detail
+  playlist, tab lain) sebelum keluar aplikasi.
+
+Detail: `docs/12-perubahan-1.3.md`.
+
 ## 1.2 — versionCode 3 (2026-10-22)
 
 **Pembaruan langsung dari dalam aplikasi.** Pengaturan → PEMBARUAN → *Periksa*.
