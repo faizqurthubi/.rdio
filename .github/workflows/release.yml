@@ -1,0 +1,83 @@
+name: Rilis APK
+
+# Dipicu saat push tag versi, mis.:
+#   git tag v1.2 && git push origin v1.2
+# Juga bisa dijalankan manual dari tab Actions.
+on:
+  push:
+    tags: ['v*']
+  workflow_dispatch:
+    inputs:
+      version:
+        description: 'Versi (harus sama dengan versionName di app/build.gradle.kts)'
+        required: true
+
+permissions:
+  contents: write
+
+jobs:
+  build:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+
+      - uses: actions/setup-java@v4
+        with:
+          distribution: temurin
+          java-version: '17'
+
+      # Katalog & logo wajib ada, kalau tidak APK akan kosong tanpa terasa
+      - name: Cek aset katalog
+        run: |
+          set -e
+          test -f app/src/main/assets/stations.json
+          COUNT=$(ls app/src/main/assets/logos | wc -l)
+          echo "logo: $COUNT"
+          test "$COUNT" -ge 600
+
+      - name: Pulihkan keystore dari secret
+        env:
+          KEYSTORE_BASE64: ${{ secrets.KEYSTORE_BASE64 }}
+          STORE_PASS: ${{ secrets.KEYSTORE_STORE_PASSWORD }}
+          KEY_PASS: ${{ secrets.KEYSTORE_KEY_PASSWORD }}
+          KEY_ALIAS: ${{ secrets.KEYSTORE_KEY_ALIAS }}
+        run: |
+          set -e
+          mkdir -p keystore
+          echo "$KEYSTORE_BASE64" | base64 -d > keystore/otoradio-release.jks
+          cat > keystore.properties <<EOF
+          storeFile=keystore/otoradio-release.jks
+          storePassword=$STORE_PASS
+          keyAlias=${KEY_ALIAS:-otoradio}
+          keyPassword=$KEY_PASS
+          EOF
+
+      - name: Build rilis
+        run: |
+          chmod +x gradlew
+          ./gradlew :app:assembleRelease :app:testReleaseUnitTest --no-daemon --console=plain
+
+      - name: Verifikasi APK
+        id: apk
+        run: |
+          set -e
+          APK=app/build/outputs/apk/release/app-release.apk
+          test -f "$APK"
+          BUILD_TOOLS=$(ls -d "$ANDROID_HOME"/build-tools/* | sort -V | tail -1)
+          "$BUILD_TOOLS/apksigner" verify --print-certs "$APK" | head -5
+          NAME="OtoRadio-$(grep -oP 'versionName\s*=\s*"\K[^"]+' app/build.gradle.kts | head -1)-release.apk"
+          cp "$APK" "$NAME"
+          sha256sum "$NAME" > SHA256SUMS
+          cat SHA256SUMS
+          echo "name=$NAME" >> "$GITHUB_OUTPUT"
+
+      - name: Terbitkan Release
+        uses: softprops/action-gh-release@v2
+        with:
+          name: OtoRadio ${{ github.ref_name }}
+          draft: true          # draft dulu: asset lengkap, baru publish -> aman untuk immutable releases
+          generate_release_notes: false
+          body_path: CHANGELOG.md
+          files: |
+            ${{ steps.apk.outputs.name }}
+            SHA256SUMS

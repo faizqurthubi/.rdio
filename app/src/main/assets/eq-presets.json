@@ -1,0 +1,253 @@
+{
+ "_meta": {
+  "generated_at": "2026-10-22",
+  "provenance": "APK radio tidak memiliki equalizer sama sekali (0 referensi android.media.audiofx). Preset di bawah disusun dari spesifikasi UI Oto Music (Tahap 2) + nilai EQ 5-band generik Android; TIDAK ada yang diekstrak dari APK.",
+  "bands_hz": [
+   60,
+   230,
+   910,
+   3600,
+   14000
+  ],
+  "gain_range_db": [
+   -15,
+   15
+  ],
+  "gain_step_db": 0.1,
+  "preset_count": 16,
+  "note": "Frekuensi band mengikuti label di layar Equalizer Oto Music: 60 Hz, 230 Hz, 910 Hz, 4 kHz, 14 kHz."
+ },
+ "presets": [
+  {
+   "id": "flat",
+   "name": "Flat",
+   "gains": [
+    0,
+    0,
+    0,
+    0,
+    0
+   ],
+   "source": "Oto Music default (netral)"
+  },
+  {
+   "id": "normal",
+   "name": "Normal",
+   "gains": [
+    0,
+    0,
+    0,
+    0,
+    0
+   ],
+   "source": "turunan; identik dengan Flat untuk perangkat tanpa preset bawaan sistem"
+  },
+  {
+   "id": "classical",
+   "name": "Classical",
+   "gains": [
+    5,
+    3,
+    -2,
+    4,
+    4
+   ],
+   "source": "nilai EQ 5-band generik Android (turunan, bukan ekstraksi APK)"
+  },
+  {
+   "id": "dance",
+   "name": "Dance",
+   "gains": [
+    6,
+    0,
+    2,
+    4,
+    1
+   ],
+   "source": "idem"
+  },
+  {
+   "id": "flat_(bass)",
+   "name": "Flat (Bass)",
+   "gains": [
+    4,
+    2,
+    0,
+    0,
+    0
+   ],
+   "source": "idem"
+  },
+  {
+   "id": "folk",
+   "name": "Folk",
+   "gains": [
+    3,
+    0,
+    0,
+    2,
+    -1
+   ],
+   "source": "idem"
+  },
+  {
+   "id": "heavy_metal",
+   "name": "Heavy Metal",
+   "gains": [
+    4,
+    1,
+    9,
+    3,
+    0
+   ],
+   "source": "idem"
+  },
+  {
+   "id": "hip_hop",
+   "name": "Hip Hop",
+   "gains": [
+    5,
+    3,
+    0,
+    1,
+    3
+   ],
+   "source": "idem"
+  },
+  {
+   "id": "jazz",
+   "name": "Jazz",
+   "gains": [
+    4,
+    2,
+    -2,
+    2,
+    5
+   ],
+   "source": "idem"
+  },
+  {
+   "id": "pop",
+   "name": "Pop",
+   "gains": [
+    -1,
+    2,
+    5,
+    1,
+    -2
+   ],
+   "source": "idem"
+  },
+  {
+   "id": "rock",
+   "name": "Rock",
+   "gains": [
+    5,
+    3,
+    -1,
+    3,
+    5
+   ],
+   "source": "idem"
+  },
+  {
+   "id": "vocal",
+   "name": "Vocal",
+   "gains": [
+    -2,
+    -3,
+    4,
+    5,
+    4
+   ],
+   "source": "turunan untuk radio bicara/talkshow"
+  },
+  {
+   "id": "bass_boost",
+   "name": "Bass Boost",
+   "gains": [
+    9,
+    6,
+    2,
+    0,
+    0
+   ],
+   "source": "mengikuti slider Bass boost Oto (0-100%)"
+  },
+  {
+   "id": "treble_boost",
+   "name": "Treble Boost",
+   "gains": [
+    0,
+    0,
+    2,
+    6,
+    8
+   ],
+   "source": "turunan"
+  },
+  {
+   "id": "podcast",
+   "name": "Podcast",
+   "gains": [
+    -4,
+    -2,
+    3,
+    4,
+    2
+   ],
+   "source": "turunan; cocok untuk siaran berita/talkshow"
+  },
+  {
+   "id": "night",
+   "name": "Night",
+   "gains": [
+    2,
+    1,
+    3,
+    -2,
+    -3
+   ],
+   "source": "turunan; kompensasi loudness rendah saat malam"
+  }
+ ],
+ "effects": {
+  "bass_boost": {
+   "range": [
+    0,
+    1000
+   ],
+   "unit": "millibel",
+   "ui_min_percent": 0,
+   "ui_max_percent": 100,
+   "default": 0,
+   "oto_label": "Bass boost"
+  },
+  "virtualizer": {
+   "range": [
+    0,
+    1000
+   ],
+   "unit": "strength",
+   "ui_min_percent": 0,
+   "ui_max_percent": 100,
+   "default": 0,
+   "oto_label": "Surround sound"
+  },
+  "loudness_enhancer": {
+   "range": [
+    0,
+    2000
+   ],
+   "unit": "millibel",
+   "default": 0
+  },
+  "preamp_gain_db": {
+   "range": [
+    -15,
+    15
+   ],
+   "default": 0
+  }
+ }
+}

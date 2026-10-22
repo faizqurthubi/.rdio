@@ -1,0 +1,28 @@
+# build & toolchain
+.gradle/
+build/
+.kotlin/
+local.properties
+*.iml
+.idea/
+captures/
+.externalNativeBuild/
+.cxx/
+
+# rahasia signing — JANGAN pernah di-commit
+keystore/
+keystore.properties
+*.jks
+*.keystore
+*.pepk
+
+# artefak rilis lokal (APK diterbitkan lewat GitHub Releases, bukan lewat git)
+dist/
+*.apk
+*.aab
+*.apks
+
+# OS / editor
+.DS_Store
+Thumbs.db
+*.swp
